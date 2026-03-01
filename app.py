@@ -89,10 +89,10 @@ def home():
     data_list = []
     for en_name, cn_name in items.items():
         df = get_price_data(en_name)
-        result = analyze(df)
+    result = analyze(df)
 
-        if result:
-            data_list.append((result[5], f"""
+if result:
+data_list.append((result[5], f"""
 <tr>
     <td>{cn_name}</td>
     <td>{result[0]}</td>
@@ -103,6 +103,7 @@ def home():
     <td>{result[5]}</td>
 </tr>
 """))
+
     data_list.sort(reverse=True)
 
     for _, row in data_list:
