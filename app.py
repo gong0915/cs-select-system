@@ -28,11 +28,11 @@ def get_price_data(item_name):
         return df
     except:
         return None
-
 def analyze(df):
     if df is None or len(df) < 20:
         return None
 
+    score = 0
     latest_price = df.iloc[-1]["price"]
 
     seven_days = df[df["date"] >= datetime.now() - timedelta(days=7)]
@@ -44,8 +44,15 @@ def analyze(df):
     old_price = seven_days.iloc[0]["price"]
     change_7d = round((latest_price - old_price) / old_price * 100, 2)
 
+    # 7天涨幅评分
+    if 3 <= change_7d <= 15:
+        score += 30
+
     prices_5 = five_days["price"].tolist()
     straight_up = all(x < y for x, y in zip(prices_5, prices_5[1:]))
+
+    if not straight_up:
+        score += 20
 
     vol_recent = df.iloc[-7:]["volume"].sum()
     vol_old = df.iloc[-14:-7]["volume"].sum()
@@ -55,33 +62,51 @@ def analyze(df):
     else:
         vol_change = round((vol_recent - vol_old) / vol_old * 100, 2)
 
-    if 3 <= change_7d <= 15 and not straight_up and vol_change > 0:
-        advice = "建议买入"
+    if vol_change > 0:
+        score += 25
+
+    # 最近3天是否有小回调
+    last3 = df.iloc[-3:]["price"].tolist()
+    if last3[-1] < last3[-2]:
+        score += 10
+
+    # 波动是否平稳
+    if abs(change_7d) < 20:
+        score += 15
+
+    if score >= 80:
+        advice = "重点关注"
+    elif score >= 70:
+        advice = "可考虑布局"
     else:
         advice = "观望"
 
-    return latest_price, change_7d, straight_up, vol_change, advice
+    return latest_price, change_7d, straight_up, vol_change, advice, score
 
 @app.get("/", response_class=HTMLResponse)
 def home():
     rows = ""
-
+    data_list = []
     for en_name, cn_name in items.items():
         df = get_price_data(en_name)
         result = analyze(df)
 
         if result:
-            rows += f"""
-            <tr>
-                <td>{cn_name}</td>
-                <td>{result[0]}</td>
-                <td>{result[1]}%</td>
-                <td>{"是" if result[2] else "否"}</td>
-                <td>{result[3]}%</td>
-                <td>{result[4]}</td>
-            </tr>
-            """
+            data_list.append((result[5], f"""
+<tr>
+    <td>{cn_name}</td>
+    <td>{result[0]}</td>
+    <td>{result[1]}%</td>
+    <td>{"是" if result[2] else "否"}</td>
+    <td>{result[3]}%</td>
+    <td>{result[4]}</td>
+    <td>{result[5]}</td>
+</tr>
+"""))
+    data_list.sort(reverse=True)
 
+    for _, row in data_list:
+         rows += row
     html = f"""
     <html>
     <head>
@@ -97,7 +122,9 @@ def home():
                 <th>7天涨跌%</th>
                 <th>5天直线暴涨</th>
                 <th>成交量变化%</th>
+                <th>投资评分</th>
                 <th>投资建议</th>
+                
             </tr>
             {rows}
         </table>
