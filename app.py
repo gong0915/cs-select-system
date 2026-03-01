@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
 import requests
 import pandas as pd
 from datetime import datetime, timedelta
@@ -61,24 +62,48 @@ def analyze(df):
 
     return latest_price, change_7d, straight_up, vol_change, advice
 
-@app.get("/")
+@app.get("/", response_class=HTMLResponse)
 def home():
-    results = []
+    rows = ""
 
     for en_name, cn_name in items.items():
         df = get_price_data(en_name)
         result = analyze(df)
 
         if result:
-            results.append({
-                "饰品名称": cn_name,
-                "当前价格": result[0],
-                "7天涨跌%": result[1],
-                "5天直线暴涨": "是" if result[2] else "否",
-                "成交量变化%": result[3],
-                "投资建议": result[4]
-            })
+            rows += f"""
+            <tr>
+                <td>{cn_name}</td>
+                <td>{result[0]}</td>
+                <td>{result[1]}%</td>
+                <td>{"是" if result[2] else "否"}</td>
+                <td>{result[3]}%</td>
+                <td>{result[4]}</td>
+            </tr>
+            """
 
-    return results
+    html = f"""
+    <html>
+    <head>
+        <title>CS 饰品选品系统</title>
+        <meta charset="utf-8">
+    </head>
+    <body>
+        <h2>CS 自动选品系统</h2>
+        <table border="1" cellpadding="8">
+            <tr>
+                <th>饰品名称</th>
+                <th>当前价格</th>
+                <th>7天涨跌%</th>
+                <th>5天直线暴涨</th>
+                <th>成交量变化%</th>
+                <th>投资建议</th>
+            </tr>
+            {rows}
+        </table>
+    </body>
+    </html>
+    """
+    return html
 
 port = int(os.environ.get("PORT", 8000))
