@@ -8,10 +8,21 @@ import os
 app = FastAPI()
 
 items = {
-    "AWP | Dragon Lore (Factory New)": "AWP | 龙狙 (崭新出厂)",
-    "AK-47 | Fire Serpent (Field-Tested)": "AK-47 | 火蛇 (略有磨损)",
+    "AWP | Asiimov (Field-Tested)": "AWP | 二西莫夫 (略有磨损)",
+    "AK-47 | Redline (Field-Tested)": "AK-47 | 红线 (略有磨损)",
+    "M4A4 | Neo-Noir (Field-Tested)": "M4A4 | 二次元 (略有磨损)",
+    "Desert Eagle | Blaze (Factory New)": "沙漠之鹰 | 炽烈之炎 (崭新出厂)",
+    "AWP | Lightning Strike (Factory New)": "AWP | 闪电打击 (崭新出厂)",
+    "AK-47 | Vulcan (Field-Tested)": "AK-47 | 火神 (略有磨损)",
+    "M4A1-S | Printstream (Field-Tested)": "M4A1-S | 印花集 (略有磨损)",
+    "USP-S | Kill Confirmed (Field-Tested)": "USP-S | 杀意已决 (略有磨损)",
     "Operation Breakout Weapon Case": "突破行动武器箱",
-    "Glove Case": "手套武器箱"
+    "Glove Case": "手套武器箱",
+    "Spectrum Case": "光谱武器箱",
+    "Prisma Case": "棱彩武器箱",
+    "Danger Zone Case": "头号特训武器箱",
+    "Fracture Case": "裂网武器箱",
+    "Chroma 2 Case": "幻彩2号武器箱"
 }
 
 def get_price_data(item_name):
