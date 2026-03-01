@@ -28,10 +28,21 @@ items = {
 def get_price_data(item_name):
     url = f"https://steamcommunity.com/market/pricehistory/?appid=730&market_hash_name={item_name}"
     try:
-        headers = {"User-Agent": "Mozilla/5.0"}
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
+            "Referer": "https://steamcommunity.com/market/"
+        }
         response = requests.get(url, headers=headers)
         data = response.json()
+
+        if "prices" not in data:
+            print("Steam返回异常:", data)
+            return None
+
         prices = data["prices"]
+
+        if not prices:
+            return None
         df = pd.DataFrame(prices, columns=["date", "price", "volume"])
         df["date"] = pd.to_datetime(df["date"])
         df["price"] = df["price"].astype(float)
